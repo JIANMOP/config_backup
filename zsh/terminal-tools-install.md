@@ -41,7 +41,7 @@ alias bat='batcat'
 alias batf='bat --paging=never'
 ```
 
-# [fastfetch] (https://github.com/fastfetch-cli/fastfetch)
+# [fastfetch](https://github.com/fastfetch-cli/fastfetch)
 终端系统信息查看
 ```bash
 wget https://github.com/fastfetch-cli/fastfetch/releases/download/2.62.1/fastfetch-linux-amd64.deb
