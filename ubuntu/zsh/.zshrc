@@ -423,6 +423,8 @@ eval "$(zoxide init zsh)"
 #alias rdp_winboat='xfreerdp /v:127.0.0.1:47300 "/u:.\evassh03" "/p:evassh03" /w:1920 /h:1080 /dynamic-resolution +clipboard /cert:ignore & disown && exit'
 
 # 使用 eza 代替传统的 ls，添加图标、显示 Git 状态、按目录优先排序
-alias ls='eza --icons --git --group-directories-first'
-alias ll='eza -lh --icons --git --group-directories-first'
+#alias ls='eza --icons --git --group-directories-first'
+#alias ll='eza -lh --icons --git --group-directories-first'
+alias ls='eza --icons --git --group-directories-first --time-style="+%Y-%m-%d %H:%M:%S %a"'
+alias ll='eza -lh --icons --git --group-directories-first --time-style="+%Y-%m-%d %H:%M:%S %a"'
 alias lt='eza --tree --level=2 --icons' # 树状显示，洞察项目结构
