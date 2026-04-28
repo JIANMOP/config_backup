@@ -1,1 +1,1 @@
-ubuntu 脚本
+# ubuntu 脚本
