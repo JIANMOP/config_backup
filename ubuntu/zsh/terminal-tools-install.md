@@ -15,6 +15,9 @@ vim ~/.zshrc
 alias ls='eza --icons --git --group-directories-first'
 alias ll='eza -lh --icons --git --group-directories-first'
 alias lt='eza --tree --level=2 --icons' # 树状显示，洞察项目结构
+# 时间格式
+alias ls='eza --icons --git --group-directories-first --time-style="+%Y-%m-%d %H:%M:%S %a"'
+alias ll='eza -lh --icons --git --group-directories-first --time-style="+%Y-%m-%d %H:%M:%S %a"'
 
 source ~/.zshrc
 ```
