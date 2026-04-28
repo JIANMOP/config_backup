@@ -45,3 +45,20 @@ tar -xzvf port_forward_ssh.tar.gz
 sudo cp port_forward_ssh /usr/local/bin
 sudo chmod +x /usr/local/bin/port_forward_ssh
 ```
+
+# [nvtop](https://github.com/Syllo/nvtop)
+GPU 终端监控工具
+```bash
+sudo apt install nvtop
+```
+
+# [x-cmd](https://cn.x-cmd.com/)
+最强工具
+```bash
+eval "$(curl https://get.x-cmd.com)"
+
+x env use yazi
+x env use btop
+x ifconfig
+```
+
