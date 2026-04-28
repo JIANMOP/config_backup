@@ -1,0 +1,49 @@
+#!/bin/bash
+clear
+
+echo "=============================="
+echo "  SSH Port Forward "
+echo "=============================="
+echo "Loading hosts from ~/.ssh/config..."
+
+# Parse valid Host entries (ignore wildcard Host *)
+hosts=($(grep -E "^Host\s+[^*]" ~/.ssh/config | awk '{print $2}' | sort))
+
+echo ""
+echo "0) Custom manual host (user@ip -p 22)"
+for i in "${!hosts[@]}"; do
+    echo "$((i + 1))) ${hosts[$i]}"
+done
+
+# Select host
+read -p $'\nEnter option number: ' sel
+target_host=""
+
+if [[ "$sel" == "0" ]]; then
+    read -p "Enter custom ssh host (user@ip -p 22): " target_host
+else
+    idx=$((sel - 1))
+    if [[ -z "${hosts[$idx]}" ]]; then
+        echo "Error: Invalid selection."
+        exit 1
+    fi
+    target_host="${hosts[$idx]}"
+fi
+
+# Port input with number check
+read -p "Remote service port: " remote_port
+read -p "Local access port: " local_port
+
+if ! [[ "$remote_port" =~ ^[0-9]+$ && "$local_port" =~ ^[0-9]+$ ]]; then
+    echo "Error: Port must be numeric."
+    exit 1
+fi
+
+# Start background local port forward -L
+echo -e "\nStarting port forwarding..."
+ssh -Nf -L 127.0.0.1:"${local_port}":127.0.0.1:"${remote_port}" "${target_host}"
+
+echo "Forward started successfully."
+echo "Local access: http://localhost:${local_port}"
+echo "Stop this forward: pkill -f \"ssh.*:${local_port}\""
+

@@ -37,3 +37,11 @@ tar -xzvf lazygit.tar.gz
 sudo cp lazygit /usr/local/bin
 sudo chmod +x /usr/local/bin/lazygit
 ```
+
+# port_forward_ssh
+ssh终端端口转发工具
+```bash
+tar -xzvf port_forward_ssh.tar.gz
+sudo cp port_forward_ssh /usr/local/bin
+sudo chmod +x /usr/local/bin/port_forward_ssh
+```
