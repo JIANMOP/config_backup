@@ -419,6 +419,9 @@ alias cd='z'
 alias df='duf'
 eval "$(zoxide init zsh)"
 
+#alias rdp_ensp='xfreerdp /v:172.16.143.130:3389 "/u:.\pfy" "/p:Ev@s123#ai" /w:1920 /h:1080 /dynamic-resolution +clipboard /cert:ignore & disown && exit'
+#alias rdp_winboat='xfreerdp /v:127.0.0.1:47300 "/u:.\evassh03" "/p:evassh03" /w:1920 /h:1080 /dynamic-resolution +clipboard /cert:ignore & disown && exit'
+
 # 使用 eza 代替传统的 ls，添加图标、显示 Git 状态、按目录优先排序
 alias ls='eza --icons --git --group-directories-first'
 alias ll='eza -lh --icons --git --group-directories-first'
