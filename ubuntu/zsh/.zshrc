@@ -157,69 +157,6 @@ function cuda_list() {
     ls -d /usr/local/cuda-* 2>/dev/null | grep -oP 'cuda-\K[\d]+\.[\d]+' | sort -V
 }
 
-# bash版本switch-cuda
-#function switch-cuda() {
-#    # 显示当前CUDA版本（完整输出，不做任何过滤）
-#    echo "Current CUDA version:"
-#    if command -v nvcc &> /dev/null; then
-#        nvcc -V
-#    else
-#        echo "nvcc not found in PATH. No active CUDA version."
-#        echo "Checking symbol link status..."
-#        if [ -L "/usr/local/cuda" ]; then
-#            echo "Current symbol link: $(readlink /usr/local/cuda)"
-#        else
-#            echo "No /usr/local/cuda symbol link exists."
-#        fi
-#    fi
-#    echo "----------------------------------------"
-#    # 列出可用的CUDA版本并存储到数组（0-based索引）
-#    local cuda_versions=($(ls -d /usr/local/cuda-* 2>/dev/null | grep -oP 'cuda-\K[\d]+\.[\d]+' | sort -V))
-#    # 检查是否有可用版本
-#    if [ ${#cuda_versions[@]} -eq 0 ]; then
-#        echo "No CUDA versions found in /usr/local/"
-#        return 1
-#    fi
-#    # 显示版本列表（修复：用数组索引遍历，1-based显示）
-#    echo "Available CUDA versions:"
-#    for idx in "${!cuda_versions[@]}"; do
-#        # idx是0-based索引，+1后转为1-based显示序号
-#        echo "$((idx + 1)). ${cuda_versions[$idx]}"
-#    done
-#    # 提示用户选择
-#    read -p "Enter the number of the version to switch to: " choice
-#    # 验证用户输入（确保是1~数组长度的数字）
-#    if ! [[ "$choice" =~ ^[0-9]+$ ]] || [ "$choice" -lt 1 ] || [ "$choice" -gt "${#cuda_versions[@]}" ]; then
-#        echo "Invalid choice. Please enter a number between 1 and ${#cuda_versions[@]}"
-#        return 1
-#    fi
-#    # 获取选中的版本（修复：将1-based choice转为0-based索引）
-#    local selected_idx=$((choice - 1))
-#    local selected_version="${cuda_versions[$selected_idx]}"
-#    local cuda_path="/usr/local/cuda-$selected_version"
-#    # 验证CUDA路径存在
-#    if [ ! -d "$cuda_path" ]; then
-#        echo "Error: CUDA path $cuda_path does not exist!"
-#        return 1
-#    fi
-#    # 切换CUDA版本（需要sudo权限，确保用户有sudo资格）
-#    echo "Switching to CUDA $selected_version..."
-#    sudo rm -f /usr/local/cuda  # 删除旧链接（-f避免无链接时报错）
-#    sudo ln -s "$cuda_path" /usr/local/cuda  # 创建新链接
-#    # 立即更新当前shell的环境变量（仅对当前终端生效，永久生效需改~/.bashrc等）
-#    export PATH="/usr/local/cuda/bin:$PATH"
-#    export LD_LIBRARY_PATH="/usr/local/cuda/lib64:$LD_LIBRARY_PATH"
-#    export CUDA_HOME="/usr/local/cuda"
-#    # 显示切换后的版本信息
-#    echo "----------------------------------------"
-#    echo "Successfully switched to CUDA version:"
-#    if [ -x "$cuda_path/bin/nvcc" ]; then
-#        "$cuda_path/bin/nvcc" -V
-#    else
-#        echo "Warning: nvcc not found in $cuda_path/bin"
-#    fi
-#}
-
 # zsh版本switch-cuda
 function switch-cuda() {
     # 显示当前CUDA版本（完整输出，不做任何过滤）
@@ -409,7 +346,6 @@ export UV_PYTHON_DOWNLOADS_JSON_URL="https://uv.agentsmirror.com/metadata/python
 export UV_PYPY_INSTALL_MIRROR="https://uv.agentsmirror.com/pypy"
 export UV_DEFAULT_INDEX="https://uv.agentsmirror.com/pypi/simple"
 # <<< uv mirror managed block <<<
-export UV_DEFAULT_INDEX="https://pypi.tuna.tsinghua.edu.cn/simple"
 
 alias bat='batcat'
 alias batf='bat --paging=never'
@@ -419,12 +355,80 @@ alias cd='z'
 alias df='duf'
 eval "$(zoxide init zsh)"
 
-#alias rdp_ensp='xfreerdp /v:172.16.143.130:3389 "/u:.\pfy" "/p:Ev@s123#ai" /w:1920 /h:1080 /dynamic-resolution +clipboard /cert:ignore & disown && exit'
-#alias rdp_winboat='xfreerdp /v:127.0.0.1:47300 "/u:.\evassh03" "/p:evassh03" /w:1920 /h:1080 /dynamic-resolution +clipboard /cert:ignore & disown && exit'
-
 # 使用 eza 代替传统的 ls，添加图标、显示 Git 状态、按目录优先排序
 #alias ls='eza --icons --git --group-directories-first'
 #alias ll='eza -lh --icons --git --group-directories-first'
+alias lt='eza --tree --level=2 --icons' # 树状显示，洞察项目结构
 alias ls='eza --icons --git --group-directories-first --time-style="+%Y-%m-%d %H:%M:%S %a"'
 alias ll='eza -lh --icons --git --group-directories-first --time-style="+%Y-%m-%d %H:%M:%S %a"'
-alias lt='eza --tree --level=2 --icons' # 树状显示，洞察项目结构
+
+. "$HOME/.cargo/env"
+
+# ta: 选择 tmux 会话（使用 tmux 原生 ID）
+ta() {
+  local sessions=$(tmux ls 2>/dev/null)
+  if [[ -z $sessions ]]; then
+    echo "No tmux sessions running."
+    return 1
+  fi
+
+  echo "==== TMUX SESSIONS ===="
+  echo "0) Exit"
+  echo "$sessions" | awk -F: '{print NR ") " $1}'
+
+  echo -n "Enter session ID: "
+  read -r num || return 0
+
+  if [[ -z $num || $num -eq 0 ]]; then
+    return 0
+  fi
+
+  local session_name=$(echo "$sessions" | sed -n "${num}p" | cut -d: -f1)
+  if [[ -z $session_name ]]; then
+    echo "Invalid selection"
+    return 1
+  fi
+
+  tmux attach -t "$session_name"
+}
+
+# tc: 创建会话
+tc() {
+  echo -n "Enter session name: "
+  read -r name || return 0
+  if [[ -z $name ]]; then
+    return 0
+  fi
+  tmux new -s "$name"
+}
+
+# td: 删除会话（使用 tmux 原生 ID）
+td() {
+  local sessions=$(tmux ls 2>/dev/null)
+  if [[ -z $sessions ]]; then
+    echo "No tmux sessions running."
+    return 1
+  fi
+
+  echo "==== DELETE TMUX SESSION ===="
+  echo "0) Exit"
+  echo "$sessions" | awk -F: '{print NR ") " $1}'
+
+  echo -n "Enter session ID to delete: "
+  read -r num || return 0
+
+  if [[ -z $num || $num -eq 0 ]]; then
+    return 0
+  fi
+
+  local session_name=$(echo "$sessions" | sed -n "${num}p" | cut -d: -f1)
+  if [[ -z $session_name ]]; then
+    echo "Invalid selection"
+    return 1
+  fi
+
+  tmux kill-session -t "$session_name"
+  echo "Deleted: $session_name"
+}
+
+
