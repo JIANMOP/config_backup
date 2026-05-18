@@ -46,6 +46,15 @@ sudo cp port_forward_ssh /usr/local/bin
 sudo chmod +x /usr/local/bin/port_forward_ssh
 ```
 
+# [filecodebox](https://github.com/vastsa/FileCodeBox)
+filecodebox_cli 交互式脚本
+```bash
+tar -xzvf filecodebox.tar.gz
+cd filecodebox
+sudo cp filecodebox /usr/local/bin
+sudo chmod +x /usr/local/bin/filecodebox
+```
+
 # [nvtop](https://github.com/Syllo/nvtop)
 GPU 终端监控工具
 ```bash
