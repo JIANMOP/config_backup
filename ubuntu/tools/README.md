@@ -76,7 +76,7 @@ x install ** 	# 自动识别系统，调用 apt/brew/dnf/winget 等，或官方�
 ```
 
 # [uv](https://github.com/astral-sh/uv)
-# [uv-custom 国内镜像](https://gitee.com/wangnov/uv-custom)
+## [uv-custom 国内镜像](https://gitee.com/wangnov/uv-custom)
 新一代极速 python 虚拟环境管理器，代替 conda
 ```bash
 # 使用 uv-custom 安装会自动换源，具体查看项目 README
