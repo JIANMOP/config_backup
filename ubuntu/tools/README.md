@@ -46,6 +46,17 @@ sudo cp port_forward_ssh /usr/local/bin
 sudo chmod +x /usr/local/bin/port_forward_ssh
 ```
 
+# [sshm](https://github.com/Gu1llaum-3/sshm)
+终端ssh工具
+```bash
+tar -xzvf sshm.tar.gz
+sudo cp sshm /usr/local/bin
+sudo chmod +x /usr/local/bin/sshm
+
+# 开启 tab 补全
+echo 'source <(sshm completion zsh)' >> ~/.zshrc
+```
+
 # [filecodebox](https://github.com/vastsa/FileCodeBox)
 filecodebox_cli 交互式脚本
 ```bash
