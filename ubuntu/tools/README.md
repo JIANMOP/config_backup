@@ -18,6 +18,9 @@ npx defuddle parse https://*** -m -o **.md
 终端服务器监控、ssh、sftp工具
 ```bash
 tar -xzvf omny.tar.gz
+cd omny/
+mkdir -p ~/.config/omnyssh
+cp config.toml ~/.config/omnyssh
 sudo cp omny /usr/local/bin
 sudo chmod +x /usr/local/bin/omny
 ```
