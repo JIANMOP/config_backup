@@ -16,7 +16,7 @@ function proxy() {
 
     elif [ "$1" = "off" ]; then
         # 关闭代理：清空代理环境变量
-        unset http_proxy https_proxy all_proxy
+        unset http_proxy https_proxy all_proxy no_proxy
         echo -e "❌ 共享IP代理已关闭"
 
     elif [ "$1" = "status" ]; then
