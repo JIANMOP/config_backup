@@ -114,8 +114,12 @@ uv self update
 http临时局域网共享
 ```sh
 tar -xzvf miniserve.tar.gz
+cd miniserve
+# miniserve 官方 cli 工具
+# miniserver 交互式 tui 脚本，需要安装 miniserve 并加入 /usr/local/bin 才可运行
 chmod +x miniserve
-sudo cp miniserve /usr/local/bin
+chmod +x miniserver
+sudo cp miniserve miniserver /usr/local/bin
 
 # 添加 tab 补全（zim框架）
 miniserve --print-completions zsh > ~/.zim/modules/zsh-completions/src/_miniserve
