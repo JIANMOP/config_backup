@@ -110,3 +110,14 @@ powershell -ExecutionPolicy ByPass -c "irm https://uv.agentsmirror.com/install-c
 uv self update
 ```
 
+# [miniserve](https://github.com/svenstaro/miniserve)
+http临时局域网共享
+```sh
+tar -xzvf miniserve.tar.gz
+chmod +x miniserve
+sudo cp miniserve /usr/local/bin
+
+# 添加 tab 补全（zim框架）
+miniserve --print-completions zsh > ~/.zim/modules/zsh-completions/src/_miniserve
+rm -f ~/.zcompdump* && compinit
+```
