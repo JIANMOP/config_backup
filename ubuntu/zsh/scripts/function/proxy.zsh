@@ -9,7 +9,7 @@ function proxy() {
         export http_proxy="$PROXY_URL"
         export https_proxy="$PROXY_URL"
         export all_proxy="socks5://$SHARE_IP:$SOCKS5_PORT"
-        export NO_PROXY="127.0.0.1,localhost,172.0.0.0/8,10.0.0.0/8,192.168.0.0/16,.svc,.cluster.local"
+        export NO_PROXY="127.0.0.1,localhost,172.16.0.0/12,10.0.0.0/8,192.168.0.0/16,.svc,.cluster.local"
         export no_proxy="$NO_PROXY"
         echo -e "✅ 共享IP代理已开启"
         echo -e "服务器：$SHARE_IP:$PROXY_PORT"
