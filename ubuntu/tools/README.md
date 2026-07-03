@@ -49,6 +49,14 @@ sudo cp port_forward_ssh /usr/local/bin
 sudo chmod +x /usr/local/bin/port_forward_ssh
 ```
 
+# docker-switch
+docker mirror proxy 切换工具
+```sh
+tar -xzvf docker-switch.tar.gz
+sudo cp docker-switch /usr/local/bin
+sudo chmod +x /usr/local/bin/docker-switch
+```
+
 # [sshm](https://github.com/Gu1llaum-3/sshm)
 终端ssh工具
 ```bash
