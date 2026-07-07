@@ -13,4 +13,5 @@ nnoremap <C-p> :set paste!<CR>
 " Ctrl+Z 撤销（和普通软件一样）
 nnoremap <C-z> u
 
-
+" 忘带 sudo 时直接 :w!! 救场
+cnoreabbrev w!! w !sudo tee % > /dev/null
