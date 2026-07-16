@@ -5,6 +5,8 @@
 # Usage:   sudo ./join_ad_domain.sh
 #
 # Before running, edit the variables in the "===== CONFIG ====" section below.
+# Note: sudo privileges (sudoers) are NOT configured by this script.
+#       Configure sudo access manually via `sudo visudo` after running this script.
 
 set -euo pipefail
 
@@ -26,10 +28,6 @@ DC_HOST="dc01.evas.ai"
 # Domain users allowed to log in to this host (enforced via access_provider=simple)
 # ALLOWED_USERS=("dawei.wang" "whitney.yang")
 ALLOWED_USERS=("dawei.wang")
-
-# Users granted full sudo privileges (written to /etc/sudoers.d/ad_admins)
-# SUDO_USERS=("dawei.wang" "roger.zhang")
-SUDO_USERS=("dawei.wang")
 
 # Default login shell
 DEFAULT_SHELL="/bin/bash"
@@ -126,34 +124,6 @@ permit_users() {
     realm permit "${ALLOWED_USERS[@]}"
 }
 
-grant_sudo() {
-    local sudo_file="/etc/sudoers.d/ad_admins"
-    log "Writing sudo privileges to ${sudo_file} ..."
-
-    # Ensure includedir is enabled in the main sudoers file
-    # (already present by default on most Ubuntu installs; this is an idempotent check)
-    if ! grep -q "^@includedir /etc/sudoers.d" /etc/sudoers; then
-        echo "@includedir /etc/sudoers.d" >> /etc/sudoers
-    fi
-
-    {
-        for u in "${SUDO_USERS[@]}"; do
-            echo "${u} ALL=(ALL) ALL"
-        done
-    } > "${sudo_file}.tmp"
-
-    chmod 440 "${sudo_file}.tmp"
-    # Validate syntax to avoid breaking sudo entirely with an invalid file
-    if visudo -c -f "${sudo_file}.tmp"; then
-        mv "${sudo_file}.tmp" "${sudo_file}"
-        log "Sudo privileges written successfully for: ${SUDO_USERS[*]}"
-    else
-        err "sudoers syntax check failed, ${sudo_file} was not written, please review"
-        rm -f "${sudo_file}.tmp"
-        exit 1
-    fi
-}
-
 verify() {
     log "===== Verification ====="
     realm list
@@ -174,11 +144,14 @@ main() {
     write_sssd_conf
     restart_sssd
     permit_users
-    grant_sudo
     verify
 
     log "All done. Add domain users later, e.g.:"
     echo "sudo realm permit ${ALLOWED_USERS[0]}"
+    log "Note: sudo privileges were NOT configured by this script. Run 'sudo visudo' manually to grant sudo access, e.g. add the following lines:"
+    echo "@includedir /etc/sudoers.d"
+    echo "dawei.wang ALL=(ALL) ALL"
+    echo "roger.zhang ALL=(ALL) ALL"
 }
 
 main "$@"
