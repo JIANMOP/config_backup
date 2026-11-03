@@ -24,6 +24,11 @@
 #   HOME_SIZE     仅 SEPARATE_HOME=1 时生效：lv_home 的大小，如 100G（至少 1G）
 #                 留空 '' = 占 root 之外的剩余全部；写了大小则卷组里多余的空间保持未分配，
 #                 以后可用 lvextend 扩容（root/swap/home 加起来不能超过 LVM 可用空间）
+#   APT_MIRROR    目标系统的 apt 软件源地址（写入 /etc/apt/sources.list，含 universe/multiverse）
+#                 例: http://mirrors.aliyun.com/ubuntu
+#                     https://mirrors.tuna.tsinghua.edu.cn/ubuntu
+#                     http://archive.ubuntu.com/ubuntu
+#   APT_SECURITY_MIRROR  安全更新源地址；国内镜像一般同样提供，可与 APT_MIRROR 相同
 #   CHECK_ONLY    1 = 只做预检并显示将要使用的配置和磁盘，不改动任何磁盘；0 = 正式安装
 set -euo pipefail
 
@@ -34,8 +39,10 @@ NEW_PASS='Ev@s123#ai'
 TZ_NAME='Asia/Shanghai'
 DISK=''
 SEPARATE_HOME=0
-ROOT_SIZE='12G'
-HOME_SIZE='3G'
+ROOT_SIZE='100G'
+HOME_SIZE=''
+APT_MIRROR='http://archive.ubuntu.com/ubuntu'
+APT_SECURITY_MIRROR='http://security.ubuntu.com/ubuntu'
 AUTO_YES=1
 CHECK_ONLY=0
 # ==============================================================
@@ -44,7 +51,7 @@ NTP_SERVERS="ntp.aliyun.com cn.pool.ntp.org"
 VG=vg_sys
 EFI_MIB=1024      # /boot/efi  fat32
 BOOT_MIB=1024     # /boot      ext4
-SWAP_SIZE=2G      # lv_swap
+SWAP_SIZE=8G      # lv_swap
 
 log() { echo -e "\n\033[1;32m==> $*\033[0m"; }
 warn() { echo -e "\033[1;33mWARN: $*\033[0m"; }
@@ -65,6 +72,8 @@ trap cleanup EXIT
   || die "用户名不合法: $NEW_USER （小写字母或下划线开头，只含小写字母、数字、下划线、连字符）"
 [ "$NEW_USER" != "root" ] || die "用户名不能是 root"
 [ -n "$NEW_PASS" ] || die "密码不能为空（NEW_PASS）"
+[ -n "$APT_MIRROR" ] || die "APT_MIRROR 不能为空"
+[ -n "$APT_SECURITY_MIRROR" ] || die "APT_SECURITY_MIRROR 不能为空"
 case "$SEPARATE_HOME" in 0|1) ;; *) die "SEPARATE_HOME 只能是 0 或 1" ;; esac
 if [ "$SEPARATE_HOME" = "1" ]; then
   [[ "$ROOT_SIZE" =~ ^[0-9]+[MGT]$ ]] || die "ROOT_SIZE 格式不对: $ROOT_SIZE （例如 30G）"
@@ -150,6 +159,7 @@ echo
 echo "主机名: $NEW_HOSTNAME"
 echo "用户名: $NEW_USER   密码: 已设置（长度 ${#NEW_PASS}）"
 echo "时区:   $TZ_NAME"
+echo "软件源: $APT_MIRROR （安全源: $APT_SECURITY_MIRROR）"
 
 to_mib() {
   local n=${1%[MGTmgt]} u=${1: -1}
@@ -331,6 +341,27 @@ fi
 mkdir -p /target/etc/systemd/timesyncd.conf.d
 printf '[Time]\nNTP=%s\n' "$NTP_SERVERS" > /target/etc/systemd/timesyncd.conf.d/ntp.conf
 
+# ---- 写入 apt 软件源（含 universe / multiverse）----
+# 直接复制 squashfs 不会经过安装器收尾，sources.list 可能缺 universe 或残留 cdrom 行，这里统一重写。
+log "写入 apt 软件源 (main restricted universe multiverse)"
+CODENAME=$(. /target/etc/os-release && echo "${VERSION_CODENAME:-jammy}")
+[ -f /target/etc/apt/sources.list ] && cp /target/etc/apt/sources.list /target/etc/apt/sources.list.orig || true
+cat > /target/etc/apt/sources.list <<EOF
+# 由 install.sh 生成
+deb ${APT_MIRROR} ${CODENAME} main restricted universe multiverse
+deb ${APT_MIRROR} ${CODENAME}-updates main restricted universe multiverse
+deb ${APT_MIRROR} ${CODENAME}-backports main restricted universe multiverse
+deb ${APT_SECURITY_MIRROR} ${CODENAME}-security main restricted universe multiverse
+EOF
+# 清掉 sources.list.d 里残留的 cdrom 源（如有）
+if [ -d /target/etc/apt/sources.list.d ]; then
+  for f in /target/etc/apt/sources.list.d/*.list; do
+    [ -e "$f" ] || continue
+    sed -i '/^deb cdrom:/d' "$f"
+  done
+fi
+echo "软件源已写入: $APT_MIRROR ($CODENAME)"
+
 # 要从目标系统里清除的 live 专用软件包（来自 ISO 自带清单）
 if [ -f "$SQDIR/filesystem.manifest-remove" ]; then
   cp "$SQDIR/filesystem.manifest-remove" /target/tmp/remove.list
@@ -394,6 +425,9 @@ EOS
 
 [ -f /target/boot/efi/EFI/ubuntu/grubx64.efi ] || [ -f /target/boot/efi/EFI/BOOT/BOOTX64.EFI ] \
   || die "EFI 引导文件没有生成，请检查上面的 grub-install 输出"
+
+# 确认软件源文件确实是我们写入的内容
+grep -q 'universe' /target/etc/apt/sources.list || die "sources.list 里没有 universe，写入失败"
 
 sync
 log "完成。检查结果:"
